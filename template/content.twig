@@ -1,0 +1,29 @@
+{% embed "@skeleton-package-crud/content.twig" with {'object_name': 'Email Type'|trans} %}
+
+	{% block pager_table_head %}
+		<th>{% trans "Id" %}</th>
+		<th>{% trans "Name" %}</th>
+	{% endblock pager_table_head %}
+
+	{% block pager_table_row %}
+		<td>{{ object.id }}</td>
+		<td>{{ object.name }}</td>
+	{% endblock pager_table_row %}
+
+	{% block form_create %}
+		<div class="form-group">
+			<label class="col-xs-3 control-label">{% trans "Name" %}</label>
+			<div class="col-xs-9"><input type="text" class="form-control" name="object[name]" /></div>
+		</div>
+
+		<div class="form-group">
+			<label class="col-xs-3 control-label">{% trans "Short name" %}</label>
+			<div class="col-xs-9"><input type="text" class="form-control" name="object[short_name]" /></div>
+		</div>
+	{% endblock form_create %}
+
+	{% block page_edit %}
+		{% include "@skeleton-package-cms-email/edit.twig" %}
+	{% endblock page_edit %}
+
+{% endembed %}

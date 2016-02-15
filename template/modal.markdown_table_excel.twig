@@ -1,0 +1,40 @@
+{% extends "@skeleton-package-cms-email/modal.base.twig" %}
+
+{% block header %}
+	<h4>{% trans "Import table from Excel" %}</h4>
+{% endblock header %}
+
+{% block body %}
+	<h3>{% trans "How to import a table from Excel:" %}</h3>
+	<ul>
+		<li>{% trans "Create your table in Excel." %}</li>
+		<li>{% trans "Directly copy from the Excel the cells you wish to import." %}</li>
+		<li>{% trans "Paste below the information in this table generator." %}</li>
+	</ul>
+
+	<form id="markdown-table-excel-form" class="form" onsubmit="return insert_excel_table();">
+		<div class="form-group">
+			<textarea id="table-data" class="form-control autogrow" rows="10"></textarea>
+		</div>
+
+		<button type="submit" class="btn btn-default">{% trans "Insert" %}</button>
+	</form>
+
+	<script type="text/javascript">
+
+		function insert_excel_table() {
+
+			var rows = $('#table-data').val();
+			output = utils.render_table(rows);
+			current_textarea.replaceSelection(output);
+			selected = current_textarea.getSelection();
+			current_textarea.setSelection(selected.start, selected.start);
+			$('#table-data').val('');
+			$('#{{ id }}').modal('hide');
+
+			return false;
+		}
+
+	</script>
+
+{% endblock body %}

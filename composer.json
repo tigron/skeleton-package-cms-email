@@ -2,11 +2,10 @@
     "name": "tigron/skeleton-package-cms-email",
     "description": "CMS system to manage email templates",
     "type": "library",
-    "require-dev": {
-		"tigron/skeleton-database": "dev-master"
-    },
     "require" : {
-        "tigron/skeleton-package-crud": "*"
+        "tigron/skeleton-package-crud": "*",
+        "bower-asset/bootstrap-markdown": "*",
+		"bower-asset/jquery.autogrowtextarea": "dev-master",
     },
     "license": "MIT",
     "authors": [
