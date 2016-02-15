@@ -51,6 +51,15 @@ abstract class Cms extends Crud {
 	}
 
 	/**
+	 * Markdown to html
+	 *
+	 * @access public
+	 */
+	public function markdown_to_html() {
+
+	}
+
+	/**
 	 * Get pager
 	 *
 	 * @access public

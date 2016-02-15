@@ -197,6 +197,7 @@
 		reorderButtonGroups: [
 			'groupFont', 'groupMisc', 'groupCustom', 'groupUtil'
 		],
+		fullscreen: false,
 		additionalButtons: [
 		[{
 			  name: "groupCustom",
@@ -209,12 +210,12 @@
 			},{
 				name: 'cmdTable',
 				title: 'Embed Table',
-				icon: 'glyphicons glyphicon-table',
+				icon: 'glyphicon glyphicon-th',
 				callback: insert_table
 			},{
 				name: 'cmdTableFromExcel',
 				title: 'Embed Table (from Excel)',
-				icon: 'glyphicons glyphicon-table',
+				icon: 'glyphicon glyphicon-th',
 				callback: function(e) {
 					current_textarea = e;
 					$('#markdown-table-excel').modal('show');
@@ -278,5 +279,10 @@
 			e.replaceSelection(output);
 			e.setSelection(selected.start, selected.start);
 		}
+	}
+
+	function markdown_to_html(markdown) {
+		var result = $.ajax({type: 'POST', url: "{{ env.module.get_module_path() }}?action=markdown_to_html", data: {markdown: markdown}, async: false}).responseText;
+		return result;
 	}
 </script>
