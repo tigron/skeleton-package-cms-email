@@ -1,3 +1,9 @@
+<ul class="breadcrumb">
+	<li><a href="/">{% trans "Root" %}</a></li>
+	<li><a href="{{ env.module.get_module_path() }}">{% if object_name is defined %}{{ object_name }}{% else %}{{ pager.get_classname() }}{% endif %}</a></li>
+	<li class="active">{% trans "Edit" %} {% if object_name is defined %}{{ object_name }}{% else %}{{ pager.get_classname() }}{% endif %} {{ object.id }}</li>
+</ul>
+
 <form action="{{ env.module.get_module_path() }}?action=edit&id={{ object.id }}" method="post" class="form-horizontal">
 <div class="panel panel-default">
 	<div class="panel-heading">{% trans "Edit email type" %}</div>
@@ -42,17 +48,6 @@
 							<textarea class="form-control autogrow" id="txt_text" name="email[text]"></textarea>
 						</div>
 					</div>
-					<div class="form-group">
-						<label class="col-xs-3">
-							{% trans "Attachments" %}
-							<a href="javascript: void(0);" onclick="add_attachment();"> <span class="glyphicon glyphicon-plus-sign"></span> {% trans "Add" %}</a>
-						</label>
-						<div class="col-xs-9">
-							<ul id="attachments">
-
-							</ul>
-						</div>
-					</div>
 
 					<div class="form-group">
 						<div class="col-xs-3 col-xs-offset-9 text-right">
@@ -62,63 +57,18 @@
 				</form>
 			</div>
 		</div>
-
-
-	{% set variables = email_type.get_variables() %}
-	{% if variables|length > 0 %}
-		<div class="panel panel-default">
-			<div class="panel-heading">{% trans "Variables" %}</div>
-			<div class="panel-body">
-				<table class="table table-condensed table-hover table-alternate">
-					<thead>
-						<tr>
-							<th>{% trans "Variable" %}</th>
-							<th>{% trans "Description" %}</th>
-						</tr>
-					</thead>
-					<tbody>
-					{% for key, variable in variables %}
-						<tr>
-							<td>{% raw %}{{{% endraw %} {{ key }} {% raw %}}}{% endraw %}</td>
-							<td>{{ variable }}</td>
-						</tr>
-					{% endfor %}
-					</tbody>
-				</table>
-			</div>
-		</div>
-	{% endif %}
 	</div>
 </div>
 
 
 {% for language in languages %}
-	{% set email = email_type.get_email_by_language( language ) %}
+	{% set email = object.get_email_by_language( language ) %}
 	<script id="email_subject_{{ language.name_short }}" type="text/x-handlebars-template">{{ email.subject|raw }}</script>
 {% endfor %}
 
 {% for language in languages %}
-	{% set email = email_type.get_email_by_language( language ) %}
+	{% set email = object.get_email_by_language( language ) %}
 	<script id="email_text_{{ language.name_short }}" type="text/x-handlebars-template">{{ email.text|raw }}</script>
-{% endfor %}
-
-{% for language in languages %}
-	{% set email = email_type.get_email_by_language( language ) %}
-	<script id="email_attachments_{{ language.name_short }}" type="text/x-handlebars-template">
-		{% for email_file in email.get_email_files() %}
-			<li class="attachment_{{ email_file.file_id }}">
-				<a href="/file?id={{ email_file.file_id }}">
-					<span class="glyphicon glyphicon-file"></span> {{ email_file.file.name }}
-				</a>
-
-				<input type="hidden" name="email_attachment[]" value="{{ email_file.file_id }}" />
-
-				<a href="javascript:void(0);" onclick="remove_attachment({{ email_file.file_id }});" data-confirm-message="{% trans "Are you sure" %}?">
-					<span class="glyphicon glyphicon-remove"></span>
-				</a>
-			</li>
-		{% endfor %}
-	</script>
 {% endfor %}
 
 {% include '@skeleton-package-cms-email/modal.markdown_table_excel.twig' with {'id': 'markdown-table-excel'} %}
@@ -135,7 +85,6 @@
 			selected_language = $('.btn-group-vertical .btn-primary').attr('id').replace('btn_', '');
 			$('#email_text_' + selected_language).html( $('#txt_text').val() );
 			$('#email_subject_' + selected_language).html( $('#txt_subject').val() );
-			$('#email_attachments_' + selected_language).html( $('#attachments').html() );
 		}
 
 		$('#emails .alert.alert-success').hide();
@@ -144,7 +93,6 @@
 
 		$('#txt_text').val( $('#email_text_' + language).html() );
 		$('#txt_subject').val( $('#email_subject_' + language).html() );
-		$('#attachments').html( $('#email_attachments_' + language).html() );
 		$('textarea.autogrow').css('height', 50);
 		$('textarea.autogrow').autoGrow();
 	}
@@ -161,14 +109,13 @@
 
 		$.ajax({
 			type: 'POST',
-			url: '/content/email/type',
+			url: '{{ env.module.get_module_path()|reverse_rewrite }}',
 			data: data,
 			async: false
 		});
 		$('.alert.alert-success').show().delay(2000).fadeOut();
 		$('#email_text_' + selected_language).html( $('#txt_text').val() );
 		$('#email_subject_' + selected_language).html( $('#txt_subject').val() );
-		$('#email_attachments_' + selected_language).html( $('#attachments').html() );
 
 		return false;
 	}
@@ -178,7 +125,6 @@
 			selected_language = $('.btn-group-vertical .btn-primary').attr('id').replace('btn_', '');
 			$('#email_text_' + selected_language).html( $('#txt_text').val() );
 			$('#email_subject_' + selected_language).html( $('#txt_subject').val() );
-			$('#email_attachments_' + selected_language).html( $('#attachments').html() );
 			reselect = selected_language;
 		}
 
@@ -282,7 +228,8 @@
 	}
 
 	function markdown_to_html(markdown) {
-		var result = $.ajax({type: 'POST', url: "{{ env.module.get_module_path() }}?action=markdown_to_html", data: {markdown: markdown}, async: false}).responseText;
+		{% set url = (env.module.get_module_path() ~ '?action=markdown_to_html')|reverse_rewrite %}
+		var result = $.ajax({type: 'POST', url: "{{ url }}", data: {markdown: markdown}, async: false}).responseText;
 		return result;
 	}
 </script>

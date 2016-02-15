@@ -55,8 +55,27 @@ abstract class Cms extends Crud {
 	 *
 	 * @access public
 	 */
-	public function markdown_to_html() {
+	public function display_markdown_to_html() {
+		$parser = new \Michelf\MarkdownExtra();
+		$output = $parser->transform($_POST['markdown']);
+		echo $output;
+		$this->template = false;
+	}
 
+	/**
+	 * Update an email
+	 *
+	 * @access public
+	 */
+	public function display_update_email() {
+		parse_str($_POST['data'], $data);
+		$email_type = Type::get_by_id($_POST['email_type_id']);
+		$interface = \Skeleton\I18n\Config::$language_interface;
+		$language = $interface::get_by_name_short($_POST['language']);
+		$email = $email_type->get_email_by_language($language);
+		$email->load_array($data['email']);
+		$email->save();
+		$this->template = false;
 	}
 
 	/**
