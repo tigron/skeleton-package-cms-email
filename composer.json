@@ -1,0 +1,26 @@
+{
+    "name": "tigron/skeleton-package-cms-email",
+    "description": "CMS system to manage email templates",
+    "type": "library",
+    "require-dev": {
+		"tigron/skeleton-database": "dev-master"
+    },
+    "require" : {
+        "tigron/skeleton-package-crud": "*"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Tigron BVBA",
+            "email": "support@tigron.be"
+        }
+    ],
+    "support": {
+        "source": "https://github.com/tigron/skeleton-package-cms-email",
+        "issues": "https://github.com/tigron/skeleton-package-cms-email/issues"
+    },
+    "autoload": {
+        "psr-4": { "Skeleton\\Package\\": "lib/Skeleton/Package/" }
+    }
+
+}
