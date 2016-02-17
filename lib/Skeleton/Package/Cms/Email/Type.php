@@ -43,4 +43,21 @@ class Type {
 		return $email;
 	}
 
+	/**
+	 * Get email by identifier
+	 *
+	 * @access public
+	 * @param string $identifier
+	 * @return \Skeleton\Package\Cms\Email\Email
+	 */
+	public static function get_by_identifier($identifier) {
+		$db = Database::get();
+		$id = $db->get_one('SELECT id FROM email_type WHERE identifier=?', [ $identifier ]);
+		if ($id === null) {
+			throw new \Exception('Email type not found');
+		}
+
+		return self::get_by_id($id);
+	}
+
 }

@@ -11,6 +11,7 @@ namespace Skeleton\Package\Cms\Email\Web\Module;
 
 use \Skeleton\Pager\Web\Pager;
 use \Skeleton\Core\Web\Template;
+use \Skeleton\Core\Web\Session;
 use \Skeleton\Package\Crud\Web\Module\Crud;
 use \Skeleton\Package\Cms\Email\Type;
 
@@ -43,6 +44,13 @@ abstract class Cms extends Crud {
 
 		$object = Type::get_by_id($_GET['id']);
 		$template->assign('object', $object);
+
+		if (isset($_POST['object'])) {
+			$object->load_array($_POST['object']);
+			$object->save();
+			Session::set_sticky('updated', true);
+			Session::redirect($this->get_module_path() . '?action=edit&id=' . $object->id);
+		}
 
 		$interface = \Skeleton\I18n\Config::$language_interface;
 		$languages = $interface::get_all();
@@ -86,6 +94,9 @@ abstract class Cms extends Crud {
 	 */
 	public function get_pager() {
 		$pager = new Pager('Skeleton\Package\Cms\Email\Type');
+		$pager->add_sort_permission('id');
+		$pager->add_sort_permission('name');
+
 		return $pager;
 	}
 

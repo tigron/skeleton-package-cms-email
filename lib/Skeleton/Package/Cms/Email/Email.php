@@ -24,6 +24,18 @@ class Email {
 	];
 
 	/**
+	 * Render a field (markdown)
+	 *
+	 * @access public
+	 * @return string $html
+	 */
+	public function render($field) {
+		$parser = new \Michelf\MarkdownExtra();
+		$output = $parser->transform($this->$field);
+		return $output;
+	}
+
+	/**
 	 * Get an email by Email_Type and language
 	 *
 	 * @param Email_Type
