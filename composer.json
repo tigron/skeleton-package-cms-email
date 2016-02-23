@@ -6,7 +6,8 @@
         "tigron/skeleton-package-crud": "*",
         "bower-asset/bootstrap-markdown": "*",
 		"bower-asset/jquery.autogrowtextarea": "dev-master",
-		"michelf/php-markdown": "*"
+		"michelf/php-markdown": "*",
+		"bower-asset/dropzone": "*"
     },
     "license": "MIT",
     "authors": [

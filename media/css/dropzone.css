@@ -1,0 +1,41 @@
+/**
+ * Dropzone
+ */
+.dropzone, .dropzone-wrapper {
+	position: relative;
+	background: #fcfcfc;
+	border: dashed 1px #ddd;
+	padding: 20px;
+	min-height: 125px;
+	margin-bottom: 25px;
+	cursor: pointer
+}
+
+	.dropzone .dz-message, .dropzone-wrapper .dz-message {
+		background: transparent url(/icon/support/support_dragdrop.png) left center no-repeat;
+		width: 190px;
+		opacity: .5;
+		margin: 0 auto;
+		margin-top: 15px;
+		text-align: center
+	}
+
+		.dropzone .dz-message span, .dropzone-wrapper .dz-message span {
+			display: block;
+			margin-left: 30px
+		}
+
+		.dropzone .progress, .dropzone-wrapper .progress {
+			position: absolute;
+			left: 20px;
+			bottom: 0;
+			height: 15px;
+			display: none;
+			width: 180px;
+			left: 50%;
+			margin-left: -90px
+		}
+
+.dz-preview {
+	display: none
+}
