@@ -1,16 +1,18 @@
-{% embed "@skeleton-package-crud/content.twig" with {'object_name': 'Email Type'|trans} %}
+{% extends "@skeleton-package-crud/content.twig" %}
 
-	{% block pager_table_head %}
-		<th>{{ pager.create_header('Id'|trans, 'id')|raw }}</th>
-		<th>{{ pager.create_header('Name'|trans, 'name')|raw }}</th>
-	{% endblock pager_table_head %}
+{% set object_name = 'Email Type'|trans %}
 
-	{% block pager_table_row %}
-		<td>{{ object.id }}</td>
-		<td>{{ object.name }}</td>
-	{% endblock pager_table_row %}
+{% block pager_table_head %}
+	<th>{{ pager.create_header('Id'|trans, 'id')|raw }}</th>
+	<th>{{ pager.create_header('Name'|trans, 'name')|raw }}</th>
+{% endblock pager_table_head %}
 
-	{% block form_create %}
+{% block pager_table_row %}
+	<td>{{ object.id }}</td>
+	<td>{{ object.name }}</td>
+{% endblock pager_table_row %}
+
+{% block form_create %}
 		<div class="form-group">
 			<label class="col-xs-3 control-label">{% trans "Name" %}</label>
 			<div class="col-xs-9"><input type="text" class="form-control" name="object[name]" /></div>
@@ -20,10 +22,383 @@
 			<label class="col-xs-3 control-label">{% trans "Identifier" %}</label>
 			<div class="col-xs-9"><input type="text" class="form-control" name="object[identifier]" /></div>
 		</div>
-	{% endblock form_create %}
+{% endblock form_create %}
 
-	{% block page_edit %}
-		{% include "@skeleton-package-cms-email/edit.twig" %}
-	{% endblock page_edit %}
+{% block page_edit %}
+	<ul class="breadcrumb">
+		<li><a href="/">{% trans "Root" %}</a></li>
+		<li><a href="{{ env.module.get_module_path() }}">{% if object_name is defined %}{{ object_name }}{% else %}{{ pager.get_classname() }}{% endif %}</a></li>
+		<li class="active">{% trans "Edit" %} {% if object_name is defined %}{{ object_name }}{% else %}{{ pager.get_classname() }}{% endif %} {{ object.id }}</li>
+	</ul>
 
-{% endembed %}
+	{% if env.sticky_session.updated %}
+		<div class="alert alert-success">
+			{% trans "The mail type has been updated." %}
+		</div>
+	{% endif %}
+
+	<form action="{{ env.module.get_module_path() }}?action=edit&id={{ object.id }}" method="post" class="form-horizontal">
+	<div class="panel panel-default">
+		<div class="panel-heading">{% trans "Edit email type" %}</div>
+		<div class="panel-body">
+			<div class="form-group">
+				<label class="col-xs-3 control-label">{% trans "Name" %}</label>
+				<div class="col-xs-9"><input type="text" name="object[name]" class="form-control" value="{{ object.name }}" /></div>
+			</div>
+
+			<div class="form-group">
+				<label class="col-xs-3 control-label">{% trans "Identifier" %}</label>
+				<div class="col-xs-9"><input type="text" name="object[identifier]" class="form-control" value="{{ object.identifier }}" /></div>
+			</div>
+
+			<div class="form-group">
+				<div class="col-xs-offset-3 col-xs-9">
+					<button type="submit" class="btn btn-primary">{% trans "Save" %}</button>
+				</div>
+			</div>
+
+		</div>
+	</div>
+	</form>
+
+	<div class="row" id="emails">
+		<div class="btn-group-vertical col-xs-3">
+			{% for language in languages %}
+				<button type="button" class="btn btn-default form-control language" id="btn_{{ language.name_short }}" onclick="load_language('{{ language.name_short }}')">{{ language.name }}</button>
+			{% endfor %}
+			<br />
+			<button type="button" class="btn btn-success form-control" onclick="save_all_languages();">{% trans "Save all languages" %}</button>
+		</div>
+
+		<div class="col-xs-9">
+			<div class="panel panel-default">
+				<div class="panel-body">
+					<div class="alert alert-success hide">
+						{% trans "The template has been saved" %}
+					</div>
+					<form class="form-horizontal" id="email_form">
+						<div class="form-group">
+							<label class="col-xs-3">{% trans "Subject" %}</label>
+							<div class="col-xs-9">
+								<input type="text" class="form-control" id="txt_subject" name="email[subject]"></subject>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-xs-3">{% trans "Body" %}</label>
+							<div class="col-xs-9">
+								<textarea class="form-control autogrow" id="txt_text" name="email[text]"></textarea>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-xs-3">{% trans "Available variables" %}:</label>
+							<div class="col-xs-9">{% block email_variables %}{% endblock %}</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-xs-3">{% trans "Attachments" %}</label>
+							<div class="col-xs-9">
+								<div class="dropzone-wrapper" id="email-file-dropzone">
+									<div class="dz-default dz-message">
+										<span>{% trans "Drag and Drop file(s)" %}</span>
+										<span>({% trans "or click here" %})</span>
+									</div>
+									<div class="progress">
+										<div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+											<span class="sr-only">0% Complete</span>
+										</div>
+									</div>
+									<div class="fallback"></div>
+								</div>
+								<div id="attachments">
+									<em>{% trans "No files added yet" %}</em>
+								</div>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<div class="col-xs-3 col-xs-offset-9 text-right">
+								<button type="submit" class="btn btn-primary">{% trans "Save" %}</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	{% for language in languages %}
+		{% set email = object.get_email_by_language( language ) %}
+		<script id="email_subject_{{ language.name_short }}" type="text/x-handlebars-template">{{ email.subject|raw }}</script>
+	{% endfor %}
+
+	{% for language in languages %}
+		{% set email = object.get_email_by_language( language ) %}
+		<script id="email_text_{{ language.name_short }}" type="text/x-handlebars-template">{{ email.text|raw }}</script>
+	{% endfor %}
+
+	{% for language in languages %}
+		{% set email = object.get_email_by_language( language ) %}
+		<script id="email_attachments_{{ language.name_short }}" type="text/x-handlebars-template">
+			{% for email_file in email.get_email_files() %}
+				<li>
+					<a href="/file?id={{ email_file.file_id }}">
+						<span class="glyphicon glyphicon-file"></span> {{ email_file.get_file().name }}
+					</a>
+
+					<input type="hidden" name="email_attachment[]" value="{{ email_file.file_id }}" />
+
+					<a href="javascript:void(0);" onclick="remove_attachment($(this));" data-confirm-message="{% trans "Are you sure" %}?">
+						<span class="glyphicon glyphicon-remove"></span>
+					</a>
+				</li>
+			{% else %}
+				<em>{% trans "No files added yet" %}</em>
+			{% endfor %}
+		</script>
+	{% endfor %}
+
+
+	{% include '@skeleton-package-cms-email/modal.markdown_table_excel.twig' with {'id': 'markdown-table-excel'} %}
+
+	<script type="text/javascript">
+		//$(".autogrow").markdown();
+
+		$('document').ready(function() {
+			$('#email_form').submit( function(){ return save_language() } );
+			load_language('en');
+		});
+
+		function load_language(language) {
+			if ( $('.btn-group-vertical .btn-primary').length > 0) {
+				selected_language = $('.btn-group-vertical .btn-primary').attr('id').replace('btn_', '');
+				$('#email_text_' + selected_language).html( $('#txt_text').val() );
+				$('#email_subject_' + selected_language).html( $('#txt_subject').val() );
+				$('#email_attachments_' + selected_language).html( $('#attachments').html() );
+			}
+
+			$('#emails .alert.alert-success').hide();
+			$('.btn-group-vertical .btn').removeClass('btn-primary');
+			$('.btn-group-vertical #btn_' + language).addClass('btn-primary');
+
+			$('#txt_text').val( $('#email_text_' + language).html() );
+			$('#txt_subject').val( $('#email_subject_' + language).html() );
+			$('#attachments').html( $('#email_attachments_' + language).html() );
+
+			$('textarea.autogrow').css('height', 50);
+			$('textarea.autogrow').autoGrow();
+		}
+
+		function save_language() {
+			selected_language = $('.btn-group-vertical .btn-primary.language').attr('id').replace('btn_', '');
+
+			data = {
+				action: 'update_email',
+				language: selected_language,
+				email_type_id: {{ object.id	}},
+				data: $('#email_form').serialize(),
+			}
+
+			$.ajax({
+				type: 'POST',
+				url: '{{ env.module.get_module_path()|reverse_rewrite }}',
+				data: data,
+				async: false
+			});
+			$('.alert.alert-success').show().delay(2000).fadeOut();
+			$('#email_text_' + selected_language).html( $('#txt_text').val() );
+			$('#email_subject_' + selected_language).html( $('#txt_subject').val() );
+			$('#email_attachments_' + selected_language).html( $('#attachments').html() );
+
+			return false;
+		}
+
+		function save_all_languages() {
+			if ( $('.btn-group-vertical .btn-primary').length > 0) {
+				selected_language = $('.btn-group-vertical .btn-primary').attr('id').replace('btn_', '');
+				$('#email_text_' + selected_language).html( $('#txt_text').val() );
+				$('#email_subject_' + selected_language).html( $('#txt_subject').val() );
+				$('#email_attachments_' + selected_language).html( $('#attachments').html() );
+				reselect = selected_language;
+			}
+
+			$('.btn-group-vertical .btn.language').each(function(index, value) {
+				language = $(this).attr('id').replace('btn_', '');
+				$('.btn-group-vertical #btn_' + language).addClass('active');
+				load_language(language);
+				save_language(language);
+				$('.btn-group-vertical #btn_' + language).removeClass('active');
+			})
+
+			load_language(reselect);
+		}
+
+		$("textarea[name*='email']").markdown({
+			hiddenButtons: ['cmdImage', 'cmdCode', 'cmdQuote', 'cmdListO'],
+			reorderButtonGroups: [
+				'groupFont', 'groupMisc', 'groupCustom', 'groupUtil'
+			],
+			fullscreen: false,
+			additionalButtons: [
+			[{
+				  name: "groupCustom",
+				  data: [{
+					name: "link",
+					toggle: true, // this param only take effect if you load bootstrap.js
+					title: "Link",
+					icon: "glyphicon glyphicon-globe",
+					callback: insert_link,
+				},{
+					name: 'cmdTable',
+					title: 'Embed Table',
+					icon: 'glyphicon glyphicon-th',
+					callback: insert_table
+				},{
+					name: 'cmdTableFromExcel',
+					title: 'Embed Table (from Excel)',
+					icon: 'glyphicon glyphicon-th',
+					callback: function(e) {
+						current_textarea = e;
+						$('#markdown-table-excel').modal('show');
+					}
+				}
+			   ]
+			}]
+		  ],
+		  disableButtons: 'cmdImage',
+		  onPreview: function (element) { return markdown_to_html(element.$textarea.val()) },
+		});
+
+		function insert_link(e) {
+			var chunk, cursor, selected = e.getSelection(), content = e.getContent(), link
+
+			if (selected.length == 0) {
+				chunk = 'enter link description here'
+			} else {
+			  	chunk = selected.text
+			}
+
+			link = prompt('Insert Hyperlink','http://')
+
+			if (link != null && link != '' && link != 'http://') {
+			  	// transform selection and set the cursor into chunked text
+			  	e.replaceSelection('['+chunk+']('+link+')')
+			  	cursor = selected.start+1
+
+			  	// Set the cursor
+			  	e.setSelection(cursor,cursor+chunk.length)
+		  	}
+		}
+
+		function insert_table(e) {
+			var chunk, cursor, selected = e.getSelection(), content = e.getContent(), link
+			def = prompt('{% trans "Please enter the number of rows and columns you would like to have (e.g. 2-3, which means 2 rows, 3 columns)" %}','rows-columns')
+
+			if (def != null && def != '' && def.split('-').length == 2) {
+			// transform selection and set the cursor into chunked text
+				def = def.split('-');
+				data = '';
+				for(x=0; x < def[1]; x++) {
+					data += 'header';
+					if (x < def[1]-1) {
+						data += "\t";
+					}
+				}
+				data += "\n";
+
+				for(x=0; x<def[0]; x++) {
+					for (y=0; y<def[1]; y++) {
+						data += 'content';
+						if (y < def[1]-1) {
+							data += "\t";
+						}
+					}
+					data += "\n";
+				}
+
+				output = utils.render_table(data);
+				e.replaceSelection(output);
+				e.setSelection(selected.start, selected.start);
+			}
+		}
+
+		function markdown_to_html(markdown) {
+			{% set url = (env.module.get_module_path() ~ '?action=markdown_to_html')|reverse_rewrite %}
+			var result = $.ajax({type: 'POST', url: "{{ url }}", data: {markdown: markdown}, async: false}).responseText;
+			return result;
+		}
+
+	</script>
+
+	<script type="text/javascript" src="/dropzone/dist/min/dropzone.min.js"></script>
+	<script id="attachment-tpl" type="text/x-handlebars-template">
+		<li>
+			<a href="/file?id=">
+				<span class="glyphicon glyphicon-file"></span>
+			</a>
+
+			<input type="hidden" name="email_attachment[]" value="" />
+
+			<a href="javascript:void(0);" onclick="remove_attachment($(this));" data-confirm-message="{% trans "Are you sure" %}?">
+				<span class="glyphicon glyphicon-remove"></span>
+			</a>
+		</li>
+	</script>
+	<script type="text/javascript">
+
+		function remove_attachment(object) {
+			$(object).closest('li').remove();
+		}
+
+		// configure drag and drop file upload
+		Dropzone.autoDiscover = false;
+
+		$("#email-file-dropzone").dropzone({
+			url: "{{ (env.module.get_module_path() ~ '?action=add_file')|reverse_rewrite }}",
+			paramName: 'file',
+			parallelUploads: 5,
+			createImageThumbnails: false,
+			init: function() {
+				this.on('success', function(file, responseText) {
+
+					try {
+						response = jQuery.parseJSON(responseText);
+						response['language'] = $(this.element).closest('.form-group').data('language');
+
+						var source = $.parseHTML($("#attachment-tpl").html());
+						attachment = source[1];
+						url = $(attachment).find('a').first().prop('href');
+						$(attachment).find('a').first().prop('href', url + response['file']['id']);
+						$(attachment).find('input').val(response['file']['id']);
+						$(attachment).find('a').first().find('span').after(response['file']['name']);
+
+						if ($('#attachments').find('em').length > 0) {
+							$('#attachments').html('');
+							$('#attachments').append($('<ul/>'));
+						}
+
+						$('#attachments ul').append(attachment);
+					}
+					catch (e) {
+						$('#attachments').html(e);
+					}
+
+				});
+
+				this.on('uploadprogress', function(file, progress) {
+					$(this.element).find('.progress-bar').css('width', progress + '%');
+				});
+
+				this.on('complete', function() {
+					$(this.element).find('.progress').fadeOut();
+				});
+
+				this.on('addedfile', function() {
+					$(this.element).find('.progress').fadeIn();
+				});
+			}
+		});
+
+	</script>
+{% endblock page_edit %}

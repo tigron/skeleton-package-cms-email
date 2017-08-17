@@ -76,6 +76,8 @@ abstract class Cms extends Crud {
 	 * @access public
 	 */
 	public function display_update_email() {
+		$this->template = false;
+
 		parse_str($_POST['data'], $data);
 		$email_type = Type::get_by_id($_POST['email_type_id']);
 		$interface = \Skeleton\I18n\Config::$language_interface;
@@ -83,7 +85,21 @@ abstract class Cms extends Crud {
 		$email = $email_type->get_email_by_language($language);
 		$email->load_array($data['email']);
 		$email->save();
-		$this->template = false;
+
+		$email_files = $email->get_email_files();
+		foreach ($email_files as $email_file) {
+			$email_file->delete();
+		}
+
+		if (isset($data['email_attachment'])) {
+			foreach ($data['email_attachment'] as $file_id) {
+				$email_file = new \Skeleton\Package\Cms\Email\File();
+				$email_file->email_id = $email->id;
+				$email_file->file_id = $file_id;
+				print_r($email_file);
+				$email_file->save();
+			}
+		}
 	}
 
 	/**
@@ -98,6 +114,25 @@ abstract class Cms extends Crud {
 		$pager->add_sort_permission('name');
 
 		return $pager;
+	}
+
+	/**
+	 * Add file
+	 *
+	 * @access public
+	 */
+	public function display_add_file() {
+		$this->template = false;
+
+		if (!isset($_FILES['file'])) {
+			echo json_encode(['error' => true]);
+			return;
+		}
+
+		$file = \Skeleton\File\File::upload($_FILES['file']);
+		$file->expire();
+
+		echo json_encode(['file' => $file->get_info(true)]);
 	}
 
 

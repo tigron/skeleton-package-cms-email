@@ -36,6 +36,16 @@ class Email {
 	}
 
 	/**
+	 * Get all email_files
+	 *
+	 * @access public
+	 * @return array email_files
+	 */
+	public function get_email_files() {
+		return File::get_by_email($this);
+	}
+
+	/**
 	 * Get an email by Email_Type and language
 	 *
 	 * @param Email_Type
