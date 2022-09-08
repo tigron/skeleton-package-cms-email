@@ -4,7 +4,7 @@
     "type": "library",
     "require" : {
         "tigron/skeleton-package-crud": "*",
-        "tigron/skeleton-file": "0.*",
+        "tigron/skeleton-file": "*",
         "bower-asset/bootstrap-markdown": "*",
 		"bower-asset/jquery.autogrowtextarea": "dev-master",
 		"michelf/php-markdown": "*",
