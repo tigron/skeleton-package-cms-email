@@ -6,7 +6,7 @@
         "tigron/skeleton-package-crud": "*",
         "tigron/skeleton-file": "*",
         "bower-asset/bootstrap-markdown": "*",
-		"bower-asset/autogrowtextarea": "*",
+		"bower-asset/autogrow-textarea": "*",
 		"michelf/php-markdown": "*",
 		"bower-asset/dropzone": "*"
     },
