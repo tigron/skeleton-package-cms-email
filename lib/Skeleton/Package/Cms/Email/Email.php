@@ -16,12 +16,26 @@ class Email {
 	use \Skeleton\Object\Get;
 	use \Skeleton\Pager\Page;
 	use \Skeleton\Object\Model;
-	use \Skeleton\Object\Delete;
+	use \Skeleton\Object\Delete {
+		delete as trait_delete;
+	}
 	use \Skeleton\Object\Save;
 
 	private static $class_configuration = [
 	  'database_table' => 'email',
 	];
+
+	/**
+	 * delete
+	 *
+	 * @access public
+	 */
+	public function delete() {
+		foreach ($this->get_email_files() as $email_file) {
+			$email_file->delete();
+		}
+		$this->trait_delete();
+	}
 
 	/**
 	 * Render a field (markdown)
@@ -62,4 +76,20 @@ class Email {
 		return Email::get_by_id($id);
 	}
 
+	/**
+	 * Get an email by Email_Type
+	 *
+	 * @access public
+	 * @param Email_Type
+	 * @return Email
+	 */
+	public static function get_by_email_type(Type $type) {
+		$db = Database::Get();
+		$results = [];
+		$ids = $db->get_column('SELECT id FROM email WHERE email_type_id=?', [$type->id]);
+		foreach ($ids as $id) {
+			$results[] = self::get_by_id($id);
+		}
+		return $results;
+	}
 }

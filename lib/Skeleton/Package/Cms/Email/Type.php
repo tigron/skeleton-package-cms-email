@@ -16,12 +16,27 @@ class Type {
 	use \Skeleton\Object\Get;
 	use \Skeleton\Pager\Page;
 	use \Skeleton\Object\Model;
-	use \Skeleton\Object\Delete;
+	use \Skeleton\Object\Delete {
+		delete as trait_delete;
+	}
 	use \Skeleton\Object\Save;
 
 	private static $class_configuration = [
 	  'database_table' => 'email_type',
 	];
+
+	/**
+	 * delete
+	 *
+	 * @access public
+	 */
+	public function delete() {
+		$emails = \Skeleton\Package\Cms\Email\Email::get_by_email_type($this);
+		foreach ($emails as $email) {
+			$email->delete();
+		}
+		$this->trait_delete();
+	}
 
 	/**
 	 * Get email by language

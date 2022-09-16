@@ -13,7 +13,9 @@ use Skeleton\Database\Database;
 
 class File {
 	use \Skeleton\Object\Get;
-	use \Skeleton\Object\Delete;
+	use \Skeleton\Object\Delete {
+		delete as trait_delete;
+	}
 	use \Skeleton\Object\Save;
 	use \Skeleton\Object\Model {
 		__isset as trait_isset;
@@ -24,6 +26,22 @@ class File {
 		'database_table' => 'email_file',
 	];
 
+	/**
+	 * delete
+	 *
+	 * @access public
+	 */
+	public function delete() {
+		\Skeleton\File\File::get_by_id($this->file_id)->delete();
+		$this->trait_delete();
+	}
+
+	/**
+	 * get file
+	 *
+	 * @access public
+	 * @return File
+	 */
 	public function get_file() {
 		return \Skeleton\File\File::get_by_id($this->file_id);
 	}
