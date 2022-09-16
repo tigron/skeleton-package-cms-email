@@ -35,6 +35,7 @@ class Migration_20160215_193109_Init extends \Skeleton\Database\Migration {
 			CREATE TABLE `email_type` (
 			  `id` int(11) NOT NULL AUTO_INCREMENT,
 			  `name` varchar(128) COLLATE utf8_unicode_ci NOT NULL,
+			  `short_name` varchar(128) COLLATE utf8_unicode_ci NOT NULL,
 			  `identifier` varchar(128) COLLATE utf8_unicode_ci NOT NULL,
 			  `removable` tinyint(1) NOT NULL,
 			  `variables` text COLLATE utf8_unicode_ci NOT NULL,
